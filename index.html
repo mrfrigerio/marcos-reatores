@@ -86,9 +86,17 @@ section{background:var(--sheet);margin:14px 0 0;padding:26px 32px 30px;border:1p
 .axis .day.wk{border-left-color:var(--ink3)}
 .axis .day.today{border-left:2px solid var(--risk)}
 .trk{position:relative;height:44px;border-bottom:1px solid #EDF1F4}
+.trk{transition:background .12s ease}
+.trk.hl{background:#F2F6F8}
+.rowlbl{transition:background .12s ease,box-shadow .12s ease}
+.rowlbl.hl{background:#F2F6F8;box-shadow:inset 4px 0 0 var(--ink)}
+.rowlbl.hl .t{color:var(--ink)}
+.rowlbl.hl .n{color:var(--ink2)}
+.trk.hl .blab{color:var(--ink)}
+.trk.hl .bar{box-shadow:0 1px 4px rgba(14,20,27,.28)}
 .trk .vline{position:absolute;top:0;bottom:0;width:1px;background:#EFF3F6}
 .trk .vline.today{background:var(--risk);opacity:.5;width:2px}
-.rowlbl{height:44px;display:flex;flex-direction:column;justify-content:center;padding-right:12px;border-bottom:1px solid #EDF1F4}
+.rowlbl{height:44px;display:flex;flex-direction:column;justify-content:center;padding:0 12px 0 10px;border-bottom:1px solid #EDF1F4}
 .rowlbl .n{font-family:"IBM Plex Mono",monospace;font-size:8.5px;color:var(--ink3);letter-spacing:.1em;line-height:1.2}
 .rowlbl .t{font-family:"Saira Condensed",sans-serif;font-weight:600;font-size:14px;text-transform:uppercase;line-height:1.05}
 .bar{position:absolute;height:12px;border-radius:1px;min-width:3px;overflow:hidden}
@@ -524,26 +532,28 @@ const rows = [
    a:{s:'2026-08-08T19:00',e:'2026-08-17T22:18',p:31}, b:{s:'2026-08-07T19:00',e:'2026-08-15T00:06',p:75}},
   {n:'02', t:'Lavagem e neutralização',
    a:{s:'2026-08-17T22:18',e:'2026-08-18T00:18'}, b:{s:'2026-08-15T00:06',e:'2026-08-15T01:06'}},
-  {n:'03', t:'Andaime interno + inspeção',
-   a:{s:'2026-08-18T00:18',e:'2026-08-19T15:30'}, b:{s:'2026-08-15T01:06',e:'2026-08-16T21:30'}},
-  {n:'04', t:'Marcação de leitos', marks:{
+  {n:'03', t:'Montagem do andaime interno',
+   a:{s:'2026-08-18T10:00',e:'2026-08-19T10:00'}, b:{s:'2026-08-15T16:00',e:'2026-08-16T16:00'}},
+  {n:'04', t:'Inspeções (ME / PM / LP)',
+   a:{s:'2026-08-19T10:00',e:'2026-08-22T01:30'}, b:{s:'2026-08-16T16:00',e:'2026-08-20T09:00'}},
+  {n:'05', t:'Marcação de leitos', marks:{
      a:['2026-08-22T22:30','2026-08-25T09:30','2026-08-27T00:30'],
      b:['2026-08-21T09:00','2026-08-23T16:30','2026-08-25T10:00']}},
-  {n:'05', t:'Desmontagem do andaime',
+  {n:'06', t:'Desmontagem do andaime',
    a:{s:'2026-08-22T02:30',e:'2026-08-22T16:30'}, b:{s:'2026-08-20T15:00',e:'2026-08-21T01:00'}},
-  {n:'06', t:'Carregamento leito inferior',
+  {n:'07', t:'Carregamento leito inferior',
    a:{s:'2026-08-23T02:30',e:'2026-08-24T15:00'}, b:{s:'2026-08-21T13:30',e:'2026-08-22T22:00'}},
-  {n:'07', t:'Carregamento leito intermediário',
+  {n:'08', t:'Carregamento leito intermediário',
    a:{s:'2026-08-25T09:30',e:'2026-08-26T08:30'}, b:{s:'2026-08-23T16:30',e:'2026-08-24T15:30'}},
-  {n:'08', t:'Carregamento leito superior',
+  {n:'09', t:'Carregamento leito superior',
    a:{s:'2026-08-27T00:30',e:'2026-08-28T01:30'}, b:{s:'2026-08-25T10:00',e:'2026-08-26T11:00'}},
-  {n:'09', t:'Fechamento BV superior / curva',
+  {n:'10', t:'Fechamento BV superior / curva',
    a:{s:'2026-08-28T01:30',e:'2026-08-28T15:30'}, b:{s:'2026-08-26T11:00',e:'2026-08-27T04:00'}},
-  {n:'10', t:'Isolamento térmico · remoção',
+  {n:'11', t:'Isolamento térmico · remoção',
    a:{s:'2026-08-08T16:00',e:'2026-08-12T01:12',p:100}, b:{s:'2026-08-08T16:00',e:'2026-08-17T15:00',p:59}},
-  {n:'11', t:'Isolamento térmico · recomposição',
+  {n:'12', t:'Isolamento térmico · recomposição',
    a:{s:'2026-08-18T16:30',e:'2026-08-22T02:00'}, b:{s:'2026-08-18T15:15',e:'2026-08-23T03:00'}},
-  {n:'12', t:'Desraqueteamento',
+  {n:'13', t:'Desraqueteamento',
    a:{s:'2026-08-28T15:30',e:'2026-08-28T23:30'}, b:{s:'2026-08-27T08:00',e:'2026-08-27T22:00'}}
 ];
 
@@ -597,6 +607,13 @@ rows.forEach(r => {
     }
   });
   cont.appendChild(trk);
+
+  const on = () => { trk.classList.add('hl'); lbl.classList.add('hl'); };
+  const off = () => { trk.classList.remove('hl'); lbl.classList.remove('hl'); };
+  [trk, lbl].forEach(el => {
+    el.addEventListener('mouseenter', on);
+    el.addEventListener('mouseleave', off);
+  });
 });
 
 /* ---- filtros por seção ---- */
